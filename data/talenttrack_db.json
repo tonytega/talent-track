@@ -260,6 +260,23 @@
       "notes": "Candidate lacked required hands-on PostgreSQL and distributed caching depth. Polite rejection letter sent.",
       "created_at": "2026-08-15T11:46:40.378Z",
       "updated_at": "2026-08-15T11:46:40.378Z"
+    },
+    {
+      "id": "da430539-dd77-4a4a-b5f2-ed17a2879873",
+      "customer_id": "c1111111-1111-1111-1111-111111111111",
+      "job_id": "j1111111-1111-1111-1111-111111111111",
+      "first_name": "Albert",
+      "last_name": "Akpovire",
+      "email": "albert@email.com",
+      "phone": "+2349160017869",
+      "location": null,
+      "linkedin_url": null,
+      "portfolio_url": null,
+      "resume_path": "resumes\\public_Anthony_Akpovire_CV_Business_Analyst-1788199961691-170613175.pdf",
+      "stage": "Applied",
+      "notes": "Applied directly via public job application link.",
+      "created_at": "2026-08-31T18:12:41.704Z",
+      "updated_at": "2026-08-31T18:12:41.704Z"
     }
   ],
   "ai_assessments": [
