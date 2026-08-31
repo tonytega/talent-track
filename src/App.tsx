@@ -12,6 +12,7 @@ import { SettingsPage } from './pages/SettingsPage';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminCustomersPage } from './pages/admin/AdminCustomersPage';
 import { AdminWorkspacePage } from './pages/admin/AdminWorkspacePage';
+import { PublicApplyPage } from './pages/PublicApplyPage';
 
 const RootRedirect: React.FC = () => {
   const { user, loading } = useAuth();
@@ -27,8 +28,9 @@ export const App: React.FC = () => {
       <AuthProvider>
         <WorkspaceProvider>
           <Routes>
-            {/* Public Auth Routes */}
+            {/* Fully Public Routes — no auth required */}
             <Route path="/login" element={<Login />} />
+            <Route path="/apply/:jobId" element={<PublicApplyPage />} />
 
             {/* Protected Routes */}
             <Route element={<ProtectedRoute />}>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Job } from '../../types/database';
 import { Button } from '../ui/Button';
 import { getStatusColor, formatDate } from '../../lib/utils';
@@ -11,6 +11,8 @@ import {
   Lock,
   Unlock,
   ChevronRight,
+  Link2,
+  Check,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -26,6 +28,15 @@ export const JobListTable: React.FC<JobListTableProps> = ({
   onToggleStatus,
 }) => {
   const navigate = useNavigate();
+  const [copiedJobId, setCopiedJobId] = useState<string | null>(null);
+
+  const copyApplicationLink = (job: Job) => {
+    const url = `${window.location.origin}/apply/${job.id}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopiedJobId(job.id);
+      setTimeout(() => setCopiedJobId(null), 2500);
+    });
+  };
 
   if (jobs.length === 0) {
     return (
@@ -130,6 +141,26 @@ export const JobListTable: React.FC<JobListTableProps> = ({
                   >
                     <Edit2 className="w-4 h-4" />
                   </Button>
+
+                  {job.status === 'Open' && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyApplicationLink(job)}
+                      className={`p-1.5 h-8 w-8 transition-colors ${
+                        copiedJobId === job.id
+                          ? 'text-emerald-600 bg-emerald-50'
+                          : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'
+                      }`}
+                      title="Copy Application Link"
+                    >
+                      {copiedJobId === job.id ? (
+                        <Check className="w-4 h-4" />
+                      ) : (
+                        <Link2 className="w-4 h-4" />
+                      )}
+                    </Button>
+                  )}
 
                   <Button
                     variant="ghost"

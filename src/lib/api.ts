@@ -253,4 +253,36 @@ export const api = {
     const data = await res.json();
     return data.signedUrl;
   },
+
+  // Public Application (no auth required)
+  async getPublicJob(jobId: string): Promise<{
+    id: string;
+    title: string;
+    description: string;
+    location: string;
+    employment_type: string;
+    salary_range: string | null;
+    status: string;
+    created_at: string;
+    company_name: string;
+  }> {
+    const res = await fetch(`${API_BASE}/public/jobs/${jobId}`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: 'Job not found' }));
+      throw new Error(err.error || 'Job not found');
+    }
+    return res.json();
+  },
+
+  async submitPublicApplication(jobId: string, formData: FormData): Promise<{ success: boolean; message: string }> {
+    const res = await fetch(`${API_BASE}/public/apply/${jobId}`, {
+      method: 'POST',
+      body: formData, // multipart/form-data — no Content-Type header set manually
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: 'Submission failed' }));
+      throw new Error(err.error || 'Failed to submit application');
+    }
+    return res.json();
+  },
 };

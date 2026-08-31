@@ -7,6 +7,7 @@ import adminRoutes from './routes/admin';
 import apiRoutes from './routes/api';
 import aiRoutes from './routes/ai';
 import storageRoutes from './routes/storage';
+import publicRoutes from './routes/public';
 
 dotenv.config();
 
@@ -43,6 +44,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/resumes', storageRoutes);
+app.use('/api/public', publicRoutes);
 app.use('/api', apiRoutes);
 
 // In production, serve Vite static build
