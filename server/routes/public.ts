@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { isSupabaseEnabled, getServiceRoleClient } from '../supabaseClient';
 import crypto from 'crypto';
 import { db, Candidate } from '../db';
 
@@ -13,18 +14,8 @@ if (!fs.existsSync(UPLOAD_DIR)) {
   fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 }
 
-// Multer storage for public CV uploads
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    cb(null, UPLOAD_DIR);
-  },
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const cleanName = path.basename(file.originalname, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, `public_${cleanName}-${uniqueSuffix}${ext}`);
-  },
-});
+// Use memory storage so we can upload to Supabase Storage or save locally as fallback
+const storage = multer.memoryStorage();
 
 const upload = multer({
   storage,
@@ -74,7 +65,7 @@ router.get('/jobs/:jobId', (req: Request, res: Response) => {
 // POST /api/public/apply/:jobId
 // Processes a candidate public application
 router.post('/apply/:jobId', (req: Request, res: Response) => {
-  upload.single('resume')(req, res, (err: any) => {
+  upload.single('resume')(req, res, async (err: any) => {
     if (err instanceof multer.MulterError) {
       if (err.code === 'LIMIT_FILE_SIZE') {
         return res.status(400).json({ error: 'Resume file exceeds the 5MB size limit.' });
@@ -89,13 +80,13 @@ router.post('/apply/:jobId', (req: Request, res: Response) => {
       const job = db.getJob(jobId);
 
       if (!job) {
-        if (req.file) fs.unlinkSync(req.file.path);
+        if (req.file && (req.file as any).path && fs.existsSync((req.file as any).path)) fs.unlinkSync((req.file as any).path);
         return res.status(404).json({ error: 'Job opening not found.' });
       }
 
       // 1. Verify job is currently Open
       if (job.status !== 'Open') {
-        if (req.file) fs.unlinkSync(req.file.path);
+        if (req.file && (req.file as any).path && fs.existsSync((req.file as any).path)) fs.unlinkSync((req.file as any).path);
         return res.status(400).json({
           error: 'This position is no longer accepting applications.',
         });
@@ -113,19 +104,19 @@ router.post('/apply/:jobId', (req: Request, res: Response) => {
 
       // 2. Validate required fields
       if (!first_name || !first_name.trim() || !last_name || !last_name.trim()) {
-        if (req.file) fs.unlinkSync(req.file.path);
+        if (req.file && (req.file as any).path && fs.existsSync((req.file as any).path)) fs.unlinkSync((req.file as any).path);
         return res.status(400).json({ error: 'First name and last name are required.' });
       }
 
       if (!email || !email.trim()) {
-        if (req.file) fs.unlinkSync(req.file.path);
+        if (req.file && (req.file as any).path && fs.existsSync((req.file as any).path)) fs.unlinkSync((req.file as any).path);
         return res.status(400).json({ error: 'Email address is required.' });
       }
 
       // Basic email format check
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email.trim())) {
-        if (req.file) fs.unlinkSync(req.file.path);
+        if (req.file && (req.file as any).path && fs.existsSync((req.file as any).path)) fs.unlinkSync((req.file as any).path);
         return res.status(400).json({ error: 'Please enter a valid email address.' });
       }
 
@@ -142,16 +133,56 @@ router.post('/apply/:jobId', (req: Request, res: Response) => {
       );
 
       if (isDuplicate) {
-        if (req.file) fs.unlinkSync(req.file.path);
+        if (req.file && (req.file as any).path && fs.existsSync((req.file as any).path)) fs.unlinkSync((req.file as any).path);
         return res.status(400).json({
           error: 'An application with this email address has already been submitted for this position.',
         });
       }
 
       // 4. Securely create candidate associated with job.customer_id
-      const relativePath = path.join('resumes', req.file.filename);
+      const candidateId = isSupabaseEnabled ? crypto.randomUUID() : 'd' + crypto.randomUUID().substring(1);
+
+      let storedPath: string | null = null;
+      if (req.file) {
+        const ext = path.extname(req.file.originalname).toLowerCase();
+        const cleanName = path.basename(req.file.originalname, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        const filename = `public_${cleanName}-${uniqueSuffix}${ext}`;
+
+        if (isSupabaseEnabled) {
+          try {
+            const service = getServiceRoleClient();
+            const bucket = 'resumes';
+            const objectPath = `${candidateId}/${filename}`;
+            const uploadResult = await service.storage.from(bucket).upload(objectPath, req.file.buffer, {
+              contentType: req.file.mimetype,
+              upsert: false,
+            });
+            if (uploadResult.error) {
+              console.warn('Supabase upload failed, falling back to local save:', uploadResult.error.message);
+              // fallback to local
+              const localPath = path.join(UPLOAD_DIR, filename);
+              fs.writeFileSync(localPath, req.file.buffer);
+              storedPath = path.join('resumes', filename);
+            } else {
+              storedPath = `${candidateId}/${filename}`; // storage key within bucket
+            }
+          } catch (err) {
+            console.warn('Error uploading to Supabase, saving locally:', err);
+            const localPath = path.join(UPLOAD_DIR, filename);
+            fs.writeFileSync(localPath, req.file.buffer);
+            storedPath = path.join('resumes', filename);
+          }
+        } else {
+          // local disk fallback
+          const localPath = path.join(UPLOAD_DIR, filename);
+          fs.writeFileSync(localPath, req.file.buffer);
+          storedPath = path.join('resumes', filename);
+        }
+      }
+
       const newCandidate: Candidate = {
-        id: 'd' + crypto.randomUUID().substring(1),
+        id: candidateId,
         customer_id: job.customer_id, // Securely derived server-side
         job_id: job.id,
         first_name: first_name.trim(),
@@ -161,7 +192,7 @@ router.post('/apply/:jobId', (req: Request, res: Response) => {
         location: location ? location.trim() : null,
         linkedin_url: linkedin_url ? linkedin_url.trim() : null,
         portfolio_url: portfolio_url ? portfolio_url.trim() : null,
-        resume_path: relativePath,
+        resume_path: storedPath,
         stage: 'Applied', // Automatically set to Applied
         notes: 'Applied directly via public job application link.',
         created_at: new Date().toISOString(),

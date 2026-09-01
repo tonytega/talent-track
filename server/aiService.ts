@@ -1,4 +1,6 @@
 import { db, AIAssessment } from './db';
+import { isSupabaseEnabled } from './supabaseClient';
+import * as supaDb from './supabaseDb';
 import crypto from 'crypto';
 
 interface AssessInput {
@@ -8,12 +10,20 @@ interface AssessInput {
 }
 
 export async function runAIAssessment(input: AssessInput): Promise<AIAssessment> {
-  const candidate = db.getCandidate(input.candidate_id);
+  let candidate: any = null;
+  let job: any = null;
+  if (isSupabaseEnabled) {
+    candidate = await supaDb.getCandidate(input.candidate_id);
+    job = await supaDb.getJob(input.job_id);
+  } else {
+    candidate = db.getCandidate(input.candidate_id);
+    job = db.getJob(input.job_id);
+  }
+
   if (!candidate) {
     throw new Error('Candidate not found');
   }
 
-  const job = db.getJob(input.job_id);
   if (!job) {
     throw new Error('Job not found');
   }
@@ -50,6 +60,11 @@ export async function runAIAssessment(input: AssessInput): Promise<AIAssessment>
     gaps: assessmentResult.gaps,
     created_at: new Date().toISOString(),
   };
+
+  if (isSupabaseEnabled) {
+    await supaDb.createAssessment(assessment);
+    return assessment;
+  }
 
   db.createAssessment(assessment);
   return assessment;

@@ -10,7 +10,7 @@ ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
 INSERT INTO public.jobs (id, customer_id, title, description, location, employment_type, salary_range, status, created_at)
 VALUES
     (
-        'j1111111-1111-1111-1111-111111111111',
+            '11111111-1111-1111-1111-111111111111',
         'c1111111-1111-1111-1111-111111111111',
         'Product Manager',
         'We are seeking an experienced Product Manager to lead our B2B SaaS platform roadmap. You will work closely with engineering, UX research, and executive stakeholders to define product features, run discovery interviews, analyze user telemetry, and drive successful product launches.',
@@ -21,7 +21,7 @@ VALUES
         now() - interval '20 days'
     ),
     (
-        'j2222222-2222-2222-2222-222222222222',
+            '22222222-2222-2222-2222-222222222222',
         'c1111111-1111-1111-1111-111111111111',
         'Software Engineer',
         'Looking for a passionate Full-Stack Software Engineer proficient in React, TypeScript, Node.js, and PostgreSQL. You will design scalable web microservices, build clean user interfaces, and collaborate in an agile environment with continuous delivery.',
@@ -32,7 +32,7 @@ VALUES
         now() - interval '18 days'
     ),
     (
-        'j3333333-3333-3333-3333-333333333333',
+            '33333333-3333-3333-3333-333333333333',
         'c1111111-1111-1111-1111-111111111111',
         'Business Analyst',
         'Contract Business Analyst to assess operational workflows, gather functional requirements, model data pipelines, and produce executive dashboards using SQL and modern BI tools.',
@@ -44,14 +44,13 @@ VALUES
     )
 ON CONFLICT (id) DO NOTHING;
 
--- 3. Demo Candidates (10 across all 6 stages)
 INSERT INTO public.candidates (id, customer_id, job_id, first_name, last_name, email, phone, linkedin_url, portfolio_url, location, stage, notes, created_at)
 VALUES
     -- Applied (2)
     (
         'd1111111-1111-1111-1111-111111111111',
         'c1111111-1111-1111-1111-111111111111',
-        'j1111111-1111-1111-1111-111111111111',
+            '11111111-1111-1111-1111-111111111111',
         'Alexander',
         'Wright',
         'alex.wright@example.com',
@@ -66,7 +65,7 @@ VALUES
     (
         'd2222222-2222-2222-2222-222222222222',
         'c1111111-1111-1111-1111-111111111111',
-        'j2222222-2222-2222-2222-222222222222',
+            '22222222-2222-2222-2222-222222222222',
         'Sophia',
         'Chen',
         'sophia.chen@example.com',
@@ -83,7 +82,7 @@ VALUES
     (
         'd3333333-3333-3333-3333-333333333333',
         'c1111111-1111-1111-1111-111111111111',
-        'j2222222-2222-2222-2222-222222222222',
+            '22222222-2222-2222-2222-222222222222',
         'Marcus',
         'Vance',
         'marcus.vance@example.com',
@@ -98,7 +97,7 @@ VALUES
     (
         'd4444444-4444-4444-4444-444444444444',
         'c1111111-1111-1111-1111-111111111111',
-        'j1111111-1111-1111-1111-111111111111',
+            '11111111-1111-1111-1111-111111111111',
         'Elena',
         'Rostova',
         'elena.rostova@example.com',
@@ -115,7 +114,7 @@ VALUES
     (
         'd5555555-5555-5555-5555-555555555555',
         'c1111111-1111-1111-1111-111111111111',
-        'j1111111-1111-1111-1111-111111111111',
+            '11111111-1111-1111-1111-111111111111',
         'David',
         'Kim',
         'david.kim@example.com',
@@ -130,7 +129,7 @@ VALUES
     (
         'd6666666-6666-6666-6666-666666666666',
         'c1111111-1111-1111-1111-111111111111',
-        'j2222222-2222-2222-2222-222222222222',
+            '22222222-2222-2222-2222-222222222222',
         'Olivia',
         'Taylor',
         'olivia.taylor@example.com',
@@ -147,7 +146,7 @@ VALUES
     (
         'd7777777-7777-7777-7777-777777777777',
         'c1111111-1111-1111-1111-111111111111',
-        'j2222222-2222-2222-2222-222222222222',
+            '22222222-2222-2222-2222-222222222222',
         'Liam',
         'O''Connor',
         'liam.oconnor@example.com',
@@ -162,7 +161,7 @@ VALUES
     (
         'd8888888-8888-8888-8888-888888888888',
         'c1111111-1111-1111-1111-111111111111',
-        'j1111111-1111-1111-1111-111111111111',
+            '11111111-1111-1111-1111-111111111111',
         'Priya',
         'Patel',
         'priya.patel@example.com',
@@ -179,7 +178,7 @@ VALUES
     (
         'd9999999-9999-9999-9999-999999999999',
         'c1111111-1111-1111-1111-111111111111',
-        'j3333333-3333-3333-3333-333333333333',
+            '33333333-3333-3333-3333-333333333333',
         'Lucas',
         'Mendoza',
         'lucas.mendoza@example.com',
@@ -196,7 +195,7 @@ VALUES
     (
         'daaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
         'c1111111-1111-1111-1111-111111111111',
-        'j2222222-2222-2222-2222-222222222222',
+            '22222222-2222-2222-2222-222222222222',
         'Ethan',
         'Brooke',
         'ethan.brooke@example.com',
@@ -210,13 +209,12 @@ VALUES
     )
 ON CONFLICT (id) DO NOTHING;
 
--- 4. Demo AI Assessment for David Kim (Product Manager candidate)
 INSERT INTO public.ai_assessments (id, candidate_id, job_id, score, summary, strengths, gaps, created_at)
 VALUES
     (
         'a1111111-1111-1111-1111-111111111111',
         'd5555555-5555-5555-5555-555555555555',
-        'j1111111-1111-1111-1111-111111111111',
+            '11111111-1111-1111-1111-111111111111',
         88,
         'David displays exceptional alignment with the Product Manager role, showcasing over 5 years of SaaS roadmap ownership, cross-functional agile leadership, and metric-driven discovery cycles.',
         '["5+ years leading B2B SaaS roadmap and sprint planning", "Demonstrated experience in user telemetry, Amplitude, and SQL data queries", "Strong track record of cross-functional alignment between Engineering and Design", "Certified Scrum Product Owner (CSPO)"]'::jsonb,

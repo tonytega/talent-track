@@ -11,9 +11,12 @@
     "start": "node dist/server/index.js",
     "preview": "vite preview",
     "db:setup": "tsx scripts/setup-db.ts",
-    "db:seed": "tsx scripts/seed.ts"
+    "db:seed": "tsx scripts/seed.ts",
+    "supabase:apply-schema": "tsx scripts/setup-supabase.ts",
+    "supabase:setup": "npm run supabase:apply-schema && npm run db:seed"
   },
   "dependencies": {
+    "pg": "^8.11.0",
     "@supabase/supabase-js": "^2.49.1",
     "clsx": "^2.1.1",
     "cors": "^2.8.5",
