@@ -20,9 +20,12 @@ router.post('/login', async (req: Request, res: Response) => {
       if (error || !data?.user) {
         console.warn('Supabase signInWithPassword failed:', { error: error ? error.message : null, data });
 
-        // If the failure is due to unconfirmed email, attempt to auto-confirm (demo convenience)
+        // If the failure is due to unconfirmed email and demo auto-confirm is allowed,
+        // attempt to auto-confirm. This is strictly a demo convenience and MUST be
+        // disabled in production by leaving ALLOW_DEMO_AUTO_CONFIRM unset or false.
+        const allowAutoConfirm = String(process.env.ALLOW_DEMO_AUTO_CONFIRM || '').toLowerCase() === 'true';
         const errMsg = error?.message || '';
-        if (errMsg.toLowerCase().includes('email not confirmed') || errMsg.toLowerCase().includes('not confirmed')) {
+        if (allowAutoConfirm && (errMsg.toLowerCase().includes('email not confirmed') || errMsg.toLowerCase().includes('not confirmed'))) {
           try {
             // Find user id by email via admin REST
             const url = `${process.env.SUPABASE_URL}/auth/v1/admin/users?email=${encodeURIComponent(email)}`;
@@ -64,6 +67,10 @@ router.post('/login', async (req: Request, res: Response) => {
           } catch (e) {
             console.warn('Auto-confirm attempt failed:', e);
           }
+        }
+
+        if (!allowAutoConfirm && errMsg.toLowerCase().includes('email not confirmed')) {
+          console.warn('Login failed due to unconfirmed email; ALLOW_DEMO_AUTO_CONFIRM is not enabled.');
         }
 
         return res.status(401).json({ error: 'Invalid email or password.' });
