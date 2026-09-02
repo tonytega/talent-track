@@ -10,7 +10,15 @@ import { db, Candidate } from '../db';
 const router = Router();
 
 // Ensure upload directory exists
-const UPLOAD_DIR = path.resolve(process.cwd(), 'data', 'resumes');
+// const UPLOAD_DIR = path.resolve(process.cwd(), 'data', 'resumes');
+// if (!fs.existsSync(UPLOAD_DIR)) {
+//   fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+// }
+
+const UPLOAD_DIR = process.env.NETLIFY === 'true'
+  ? path.join('/tmp', 'resumes')
+  : path.resolve(process.cwd(), 'data', 'resumes');
+
 if (!fs.existsSync(UPLOAD_DIR)) {
   fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 }

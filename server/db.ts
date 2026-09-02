@@ -83,10 +83,22 @@ export interface DatabaseState {
   ai_assessments: AIAssessment[];
 }
 
-const DB_FILE = path.resolve(process.cwd(), 'data', 'talenttrack_db.json');
+// const DB_FILE = path.resolve(process.cwd(), 'data', 'talenttrack_db.json');
 
-// Ensure data folder exists
+// // Ensure data folder exists
+// const dataDir = path.dirname(DB_FILE);
+// if (!fs.existsSync(dataDir)) {
+//   fs.mkdirSync(dataDir, { recursive: true });
+// }
+
+const isNetlify = process.env.NETLIFY === 'true';
+
+const DB_FILE = isNetlify
+  ? path.join('/tmp', 'talenttrack_db.json')
+  : path.resolve(process.cwd(), 'data', 'talenttrack_db.json');
+
 const dataDir = path.dirname(DB_FILE);
+
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
 }

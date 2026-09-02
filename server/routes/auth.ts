@@ -1,8 +1,14 @@
 import { Router, Request, Response } from 'express';
-import { db } from '../db';
+// import { db } from '../db';
 import { isSupabaseEnabled, getSupabase, getServiceRoleClient } from '../supabaseClient';
 
 const router = Router();
+
+// we load db only when needed.
+const getLocalDb = async () => {
+  const { db } = await import('../db');
+  return db;
+};
 
 // POST /api/auth/login
 router.post('/login', async (req: Request, res: Response) => {
@@ -104,7 +110,9 @@ router.post('/login', async (req: Request, res: Response) => {
     }
 
     // Local JSON fallback (demo)
-    const user = db.findUserByEmail(email);
+    // const user = db.findUserByEmail(email);
+    const db = await getLocalDb();
+const user = db.findUserByEmail(email);
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password.' });
     }
@@ -169,10 +177,17 @@ router.get('/session', async (req: Request, res: Response) => {
       });
     }
 
-    const user = db.findUserById(userId);
-    if (!user) {
-      return res.status(401).json({ error: 'User not found' });
-    }
+    // const user = db.findUserById(userId);
+    // if (!user) {
+    //   return res.status(401).json({ error: 'User not found' });
+    // }
+
+    const db = await getLocalDb();
+
+const user = db.findUserById(userId);
+if (!user) {
+  return res.status(401).json({ error: 'User not found' });
+}
 
     const profile = db.getProfile(user.id);
     const roleRecord = db.getUserRole(user.id);
@@ -194,7 +209,13 @@ router.get('/session', async (req: Request, res: Response) => {
 });
 
 // POST /api/auth/reset-demo
-router.post('/reset-demo', (_req: Request, res: Response) => {
+// router.post('/reset-demo', (_req: Request, res: Response) => {
+//   db.resetToSeed();
+//   return res.json({ success: true, message: 'Database reset to initial seed state.' });
+// });
+
+router.post('/reset-demo', async (_req: Request, res: Response) => {
+  const db = await getLocalDb();
   db.resetToSeed();
   return res.json({ success: true, message: 'Database reset to initial seed state.' });
 });
