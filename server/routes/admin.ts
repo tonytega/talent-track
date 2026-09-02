@@ -68,8 +68,8 @@ router.post('/create-customer', requireAdmin, async (req: Request, res: Response
       const { data: userData, error: userError } = await svc.auth.admin.createUser({ email: contact_email, password: userPass });
       if (userError) throw userError;
 
-      const createdUserId = (userData && (userData.id || (userData.user && userData.user.id))) || null;
-      const createdUserEmail = (userData && (userData.email || (userData.user && userData.user.email))) || contact_email;
+      let createdUserId = (userData && ( (userData as any).id || (userData as any).user?.id )) || null;
+      const createdUserEmail = (userData && ( (userData as any).email || (userData as any).user?.email )) || contact_email;
       if (!createdUserId) {
         // Try admin REST lookup as a fallback
         try {
@@ -97,8 +97,8 @@ router.post('/create-customer', requireAdmin, async (req: Request, res: Response
         message: 'Customer account created successfully',
         customer,
         user: {
-          id: userData.id,
-          email: userData.email,
+          id: createdUserId,
+          email: createdUserEmail,
           full_name: profile.full_name,
           role: role.role,
         },
@@ -145,8 +145,8 @@ router.post('/create-admin', requireAdmin, async (req: Request, res: Response) =
       const { data: userData, error: userError } = await svc.auth.admin.createUser({ email, password: userPass });
       if (userError) throw userError;
 
-      let createdAdminId = (userData && (userData.id || (userData.user && userData.user.id))) || null;
-      const createdAdminEmail = (userData && (userData.email || (userData.user && userData.user.email))) || email;
+      let createdAdminId = (userData && ( (userData as any).id || (userData as any).user?.id )) || null;
+      const createdAdminEmail = (userData && ( (userData as any).email || (userData as any).user?.email )) || email;
       if (!createdAdminId) {
         try {
           const url = `${process.env.SUPABASE_URL}/auth/v1/admin/users?email=${encodeURIComponent(email)}`;

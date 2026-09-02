@@ -53,7 +53,7 @@ router.post('/login', async (req: Request, res: Response) => {
                   // proceed with retry result
                   const userId = retry.data.user.id;
                   const svc = getServiceRoleClient();
-                  const { data: profileData, error: profileErr } = await svc.from('profiles').select('*').eq('id', userId).maybeSingle();
+                  const { data: profileData } = await svc.from('profiles').select('*').eq('id', userId).maybeSingle();
                   const { data: roleData } = await svc.from('user_roles').select('*').eq('user_id', userId).maybeSingle();
                   const profile = profileData || null;
                   const roleRecord = roleData || null;
