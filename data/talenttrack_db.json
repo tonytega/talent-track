@@ -5,7 +5,7 @@
       "name": "Acme Recruitment",
       "contact_name": "Sarah Jenkins",
       "contact_email": "recruiter@acme.com",
-      "created_at": "2026-08-02T10:31:28.663Z"
+      "created_at": "2026-08-03T09:29:38.178Z"
     }
   ],
   "profiles": [
@@ -14,21 +14,14 @@
       "full_name": "Alex Rivera (Admin)",
       "email": "admin@talenttrack.io",
       "customer_id": null,
-      "created_at": "2026-07-03T10:31:28.664Z"
+      "created_at": "2026-07-04T09:29:38.178Z"
     },
     {
       "id": "u0000000-0000-0000-0000-000000000002",
       "full_name": "Sarah Jenkins",
       "email": "recruiter@acme.com",
       "customer_id": "c1111111-1111-1111-1111-111111111111",
-      "created_at": "2026-08-02T10:31:28.664Z"
-    },
-    {
-      "id": "u5a8d7xqud-mtiyrls4",
-      "full_name": "Jordan",
-      "email": "jordan@email.com",
-      "customer_id": null,
-      "created_at": "2026-09-01T17:51:23.909Z"
+      "created_at": "2026-08-03T09:29:38.178Z"
     }
   ],
   "user_roles": [
@@ -36,19 +29,13 @@
       "id": "r1111111-1111-1111-1111-111111111111",
       "user_id": "u0000000-0000-0000-0000-000000000001",
       "role": "admin",
-      "created_at": "2026-07-03T10:31:28.664Z"
+      "created_at": "2026-07-04T09:29:38.178Z"
     },
     {
       "id": "r2222222-2222-2222-2222-222222222222",
       "user_id": "u0000000-0000-0000-0000-000000000002",
       "role": "customer",
-      "created_at": "2026-08-02T10:31:28.664Z"
-    },
-    {
-      "id": "r343b535-71a6-4507-8c72-1822b246549f",
-      "user_id": "u5a8d7xqud-mtiyrls4",
-      "role": "admin",
-      "created_at": "2026-09-01T17:51:23.912Z"
+      "created_at": "2026-08-03T09:29:38.178Z"
     }
   ],
   "auth_users": [
@@ -56,19 +43,13 @@
       "id": "u0000000-0000-0000-0000-000000000001",
       "email": "admin@talenttrack.io",
       "passwordHash": "Password123!",
-      "created_at": "2026-07-03T10:31:28.664Z"
+      "created_at": "2026-07-04T09:29:38.178Z"
     },
     {
       "id": "u0000000-0000-0000-0000-000000000002",
       "email": "recruiter@acme.com",
       "passwordHash": "Password123!",
-      "created_at": "2026-08-02T10:31:28.664Z"
-    },
-    {
-      "id": "u5a8d7xqud-mtiyrls4",
-      "email": "jordan@email.com",
-      "passwordHash": "Password123!",
-      "created_at": "2026-09-01T17:51:23.908Z"
+      "created_at": "2026-08-03T09:29:38.178Z"
     }
   ],
   "jobs": [
@@ -81,8 +62,8 @@
       "employment_type": "Full-time",
       "salary_range": "£75,000 - £90,000",
       "status": "Open",
-      "created_at": "2026-08-12T10:31:28.664Z",
-      "updated_at": "2026-08-12T10:31:28.664Z"
+      "created_at": "2026-08-13T09:29:38.178Z",
+      "updated_at": "2026-08-13T09:29:38.178Z"
     },
     {
       "id": "j2222222-2222-2222-2222-222222222222",
@@ -93,8 +74,8 @@
       "employment_type": "Full-time",
       "salary_range": "$140,000 - $175,000",
       "status": "Open",
-      "created_at": "2026-08-14T10:31:28.664Z",
-      "updated_at": "2026-08-14T10:31:28.664Z"
+      "created_at": "2026-08-15T09:29:38.178Z",
+      "updated_at": "2026-08-15T09:29:38.178Z"
     },
     {
       "id": "j3333333-3333-3333-3333-333333333333",
@@ -105,8 +86,8 @@
       "employment_type": "Contract",
       "salary_range": "$65/hr - $80/hr",
       "status": "Closed",
-      "created_at": "2026-07-18T10:31:28.664Z",
-      "updated_at": "2026-07-18T10:31:28.664Z"
+      "created_at": "2026-07-19T09:29:38.178Z",
+      "updated_at": "2026-07-19T09:29:38.178Z"
     }
   ],
   "candidates": [
@@ -124,8 +105,8 @@
       "resume_path": "resumes/alexander_wright_cv.pdf",
       "stage": "Applied",
       "notes": "Applied via website referral. Has 4 years of SaaS PM background.",
-      "created_at": "2026-08-30T10:31:28.664Z",
-      "updated_at": "2026-08-30T10:31:28.664Z"
+      "created_at": "2026-08-31T09:29:38.178Z",
+      "updated_at": "2026-08-31T09:29:38.178Z"
     },
     {
       "id": "d2222222-2222-2222-2222-222222222222",
@@ -141,8 +122,8 @@
       "resume_path": "resumes/sophia_chen_cv.pdf",
       "stage": "Applied",
       "notes": "Recent graduate with solid React/TypeScript internship experience.",
-      "created_at": "2026-08-29T10:31:28.664Z",
-      "updated_at": "2026-08-29T10:31:28.664Z"
+      "created_at": "2026-08-30T09:29:38.178Z",
+      "updated_at": "2026-08-30T09:29:38.178Z"
     },
     {
       "id": "d3333333-3333-3333-3333-333333333333",
@@ -158,8 +139,8 @@
       "resume_path": "resumes/marcus_vance_cv.pdf",
       "stage": "Screening",
       "notes": "Recruiter phone screen scheduled for Thursday. Strong backend SQL and system design skillset.",
-      "created_at": "2026-08-26T10:31:28.664Z",
-      "updated_at": "2026-08-26T10:31:28.664Z"
+      "created_at": "2026-08-27T09:29:38.178Z",
+      "updated_at": "2026-08-27T09:29:38.178Z"
     },
     {
       "id": "d4444444-4444-4444-4444-444444444444",
@@ -175,8 +156,8 @@
       "resume_path": "resumes/elena_rostova_cv.pdf",
       "stage": "Screening",
       "notes": "Strong Agile/Scrum background in FinTech. Initial screening call completed positively.",
-      "created_at": "2026-08-24T10:31:28.664Z",
-      "updated_at": "2026-08-24T10:31:28.664Z"
+      "created_at": "2026-08-25T09:29:38.178Z",
+      "updated_at": "2026-08-25T09:29:38.178Z"
     },
     {
       "id": "d5555555-5555-5555-5555-555555555555",
@@ -192,8 +173,8 @@
       "resume_path": "resumes/david_kim_cv.pdf",
       "stage": "Interview",
       "notes": "Completed hiring manager round. Moving to final panel presentation with Engineering Lead.",
-      "created_at": "2026-08-20T10:31:28.664Z",
-      "updated_at": "2026-08-20T10:31:28.664Z"
+      "created_at": "2026-08-21T09:29:38.178Z",
+      "updated_at": "2026-08-21T09:29:38.178Z"
     },
     {
       "id": "d6666666-6666-6666-6666-666666666666",
@@ -209,8 +190,8 @@
       "resume_path": "resumes/olivia_taylor_cv.pdf",
       "stage": "Interview",
       "notes": "Passed technical coding test with 95% score. On-site architecture interview next week.",
-      "created_at": "2026-08-22T10:31:28.664Z",
-      "updated_at": "2026-08-22T10:31:28.664Z"
+      "created_at": "2026-08-23T09:29:38.178Z",
+      "updated_at": "2026-08-23T09:29:38.178Z"
     },
     {
       "id": "d7777777-7777-7777-7777-777777777777",
@@ -226,8 +207,8 @@
       "resume_path": "resumes/liam_oconnor_cv.pdf",
       "stage": "Offer",
       "notes": "Formal offer package sent ($165k base + equity). Awaiting signature by end of week.",
-      "created_at": "2026-08-18T10:31:28.664Z",
-      "updated_at": "2026-08-18T10:31:28.664Z"
+      "created_at": "2026-08-19T09:29:38.178Z",
+      "updated_at": "2026-08-19T09:29:38.178Z"
     },
     {
       "id": "d8888888-8888-8888-8888-888888888888",
@@ -243,8 +224,8 @@
       "resume_path": "resumes/priya_patel_cv.pdf",
       "stage": "Offer",
       "notes": "Verbal offer accepted (£85,000). Preparing contract documents.",
-      "created_at": "2026-08-17T10:31:28.664Z",
-      "updated_at": "2026-08-17T10:31:28.664Z"
+      "created_at": "2026-08-18T09:29:38.178Z",
+      "updated_at": "2026-08-18T09:29:38.178Z"
     },
     {
       "id": "d9999999-9999-9999-9999-999999999999",
@@ -260,8 +241,8 @@
       "resume_path": "resumes/lucas_mendoza_cv.pdf",
       "stage": "Hired",
       "notes": "Successfully onboarded as Business Analyst for Q3 finance migration.",
-      "created_at": "2026-08-07T10:31:28.664Z",
-      "updated_at": "2026-08-07T10:31:28.664Z"
+      "created_at": "2026-08-08T09:29:38.178Z",
+      "updated_at": "2026-08-08T09:29:38.178Z"
     },
     {
       "id": "daaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
@@ -277,8 +258,8 @@
       "resume_path": "resumes/ethan_brooke_cv.pdf",
       "stage": "Rejected",
       "notes": "Candidate lacked required hands-on PostgreSQL and distributed caching depth. Polite rejection letter sent.",
-      "created_at": "2026-08-16T10:31:28.664Z",
-      "updated_at": "2026-08-16T10:31:28.664Z"
+      "created_at": "2026-08-17T09:29:38.178Z",
+      "updated_at": "2026-08-17T09:29:38.178Z"
     }
   ],
   "ai_assessments": [
@@ -298,41 +279,7 @@
         "Candidate has primarily worked in North American timezones (role requires UK/London collaboration)",
         "Limited direct experience with enterprise SOC2 compliance workflows"
       ],
-      "created_at": "2026-08-21T10:31:28.664Z"
-    },
-    {
-      "id": "a50009aa-a1f8-4062-8ab0-534790775b33",
-      "candidate_id": "d1111111-1111-1111-1111-111111111111",
-      "job_id": "j1111111-1111-1111-1111-111111111111",
-      "score": 95,
-      "summary": "Alexander Wright presents a strong profile for the Product Manager position, showing notable experience aligned with key deliverables and team responsibilities.",
-      "strengths": [
-        "Demonstrated SaaS product roadmap ownership & discovery lifecycle experience",
-        "Strong user-centric feature prioritization and backlog management",
-        "Verified professional portfolio & industry recommendations"
-      ],
-      "gaps": [
-        "Assess depth with technical API specifications and architectural trade-offs",
-        "Confirm comfort working in asynchronous distributed sprint cadence"
-      ],
-      "created_at": "2026-09-01T18:01:03.613Z"
-    },
-    {
-      "id": "aa84c868-e8e8-42b5-a37f-0ece87b57d63",
-      "candidate_id": "d1111111-1111-1111-1111-111111111111",
-      "job_id": "j1111111-1111-1111-1111-111111111111",
-      "score": 95,
-      "summary": "Alexander Wright presents a strong profile for the Product Manager position, showing notable experience aligned with key deliverables and team responsibilities.",
-      "strengths": [
-        "Demonstrated SaaS product roadmap ownership & discovery lifecycle experience",
-        "Strong user-centric feature prioritization and backlog management",
-        "Verified professional portfolio & industry recommendations"
-      ],
-      "gaps": [
-        "Assess depth with technical API specifications and architectural trade-offs",
-        "Confirm comfort working in asynchronous distributed sprint cadence"
-      ],
-      "created_at": "2026-09-01T18:01:16.358Z"
+      "created_at": "2026-08-22T09:29:38.178Z"
     }
   ]
 }

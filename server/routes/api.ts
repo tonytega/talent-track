@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { db, Job, Candidate } from '../db';
 import crypto from 'crypto';
-import { isSupabaseEnabled } from '../supabaseClient';
+import { isSupabaseEnabled, getServiceRoleClient } from '../supabaseClient';
 import * as supaDb from '../supabaseDb';
 
 const router = Router();
@@ -15,6 +15,10 @@ async function getWorkspaceContext(req: Request): Promise<{ customerId: string |
     const role = await supaDb.getUserRole(userId);
     const isAdmin = role?.role === 'admin';
     const profile = await supaDb.getProfile(userId);
+
+    console.log('getWorkspaceContext: userId=', userId);
+    console.log('getWorkspaceContext: role=', role);
+    console.log('getWorkspaceContext: profile=', profile);
 
     let customerId: string | null = null;
     if (isAdmin) {
@@ -126,6 +130,27 @@ router.get('/jobs', async (req: Request, res: Response) => {
 
     return res.json(result);
   } catch (err: any) {
+    return res.status(500).json({ error: err.message || 'Failed to fetch jobs' });
+  }
+});
+
+// Debug: report whether server is using Supabase or local JSON
+router.get('/debug/mode', async (_req: Request, res: Response) => {
+  try {
+    return res.json({ isSupabaseEnabled });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message || 'Failed to get debug mode' });
+  }
+});
+
+// Debug: list jobs for a given customerId using service role (bypass workspace context)
+router.get('/debug/jobs', async (req: Request, res: Response) => {
+  try {
+    const customerId = req.query.customerId as string | undefined;
+    const jobs = isSupabaseEnabled ? await supaDb.getJobs(customerId) : db.getJobs(customerId);
+    return res.json(jobs);
+  } catch (err: any) {
+    console.error('Debug jobs error:', err);
     return res.status(500).json({ error: err.message || 'Failed to fetch jobs' });
   }
 });
@@ -372,7 +397,7 @@ router.delete('/candidates/:id', async (req: Request, res: Response) => {
 
     if (isSupabaseEnabled) {
       // Delete via service role client
-      const service = require('../supabaseClient').getServiceRoleClient();
+      const service = getServiceRoleClient();
       const { error } = await service.from('candidates').delete().eq('id', id);
       if (error) throw error;
     } else {

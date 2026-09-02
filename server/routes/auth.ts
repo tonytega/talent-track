@@ -1,10 +1,11 @@
 import { Router, Request, Response } from 'express';
 import { db } from '../db';
+import { isSupabaseEnabled, getSupabase, getServiceRoleClient } from '../supabaseClient';
 
 const router = Router();
 
 // POST /api/auth/login
-router.post('/login', (req: Request, res: Response) => {
+router.post('/login', async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
@@ -12,6 +13,90 @@ router.post('/login', (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Email and password are required.' });
     }
 
+    if (isSupabaseEnabled) {
+      // Use anon client to sign in with password
+      const supabase = getSupabase();
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error || !data?.user) {
+        console.warn('Supabase signInWithPassword failed:', { error: error ? error.message : null, data });
+
+        // If the failure is due to unconfirmed email, attempt to auto-confirm (demo convenience)
+        const errMsg = error?.message || '';
+        if (errMsg.toLowerCase().includes('email not confirmed') || errMsg.toLowerCase().includes('not confirmed')) {
+          try {
+            // Find user id by email via admin REST
+            const url = `${process.env.SUPABASE_URL}/auth/v1/admin/users?email=${encodeURIComponent(email)}`;
+            const resp = await fetch(url, { headers: { Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`, apikey: process.env.SUPABASE_SERVICE_ROLE_KEY || '' } });
+            const j = await resp.json().catch(() => null);
+            console.warn('Admin users lookup response:', { ok: resp.ok, status: resp.status, body: j });
+            if (resp.ok && j) {
+              let found: any = null;
+              if (Array.isArray(j?.users)) found = j.users.find((u: any) => u.email === email) || j.users[0];
+              else if (Array.isArray(j)) found = j.find((u: any) => u.email === email) || j[0];
+              else found = j;
+              const userId = found?.id;
+              if (userId) {
+                // Attempt to mark email as confirmed
+                const updateUrl = `${process.env.SUPABASE_URL}/auth/v1/admin/users/${userId}`;
+                await fetch(updateUrl, {
+                  method: 'PUT',
+                  headers: { Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`, apikey: process.env.SUPABASE_SERVICE_ROLE_KEY || '', 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ email_confirm: true, email_confirmed_at: new Date().toISOString() }),
+                });
+
+                // Retry sign in once
+                const retry = await supabase.auth.signInWithPassword({ email, password });
+                if (!retry.error && retry.data?.user) {
+                  // proceed with retry result
+                  const userId = retry.data.user.id;
+                  const svc = getServiceRoleClient();
+                  const { data: profileData, error: profileErr } = await svc.from('profiles').select('*').eq('id', userId).maybeSingle();
+                  const { data: roleData } = await svc.from('user_roles').select('*').eq('user_id', userId).maybeSingle();
+                  const profile = profileData || null;
+                  const roleRecord = roleData || null;
+                  const customer = profile?.customer_id ? (await svc.from('customers').select('*').eq('id', profile.customer_id).maybeSingle()).data : null;
+
+                  const token = Buffer.from(`${userId}:${email}:${roleRecord?.role || 'customer'}:${Date.now()}`).toString('base64');
+                  return res.json({ token, user: { id: userId, email, full_name: profile?.full_name || email, customer_id: profile?.customer_id || null, role: roleRecord?.role || 'customer', customer: customer || null } });
+                }
+              }
+            }
+          } catch (e) {
+            console.warn('Auto-confirm attempt failed:', e);
+          }
+        }
+
+        return res.status(401).json({ error: 'Invalid email or password.' });
+      }
+
+      const userId = data.user.id;
+      // Fetch profile and role via service role client
+      const svc = getServiceRoleClient();
+      const { data: profileData, error: profileErr } = await svc.from('profiles').select('*').eq('id', userId).maybeSingle();
+      if (profileErr) console.warn('Profile lookup error:', profileErr.message);
+      const { data: roleData, error: roleErr } = await svc.from('user_roles').select('*').eq('user_id', userId).maybeSingle();
+      if (roleErr) console.warn('Role lookup error:', roleErr.message);
+
+      const profile = profileData || null;
+      const roleRecord = roleData || null;
+      const customer = profile?.customer_id ? (await svc.from('customers').select('*').eq('id', profile.customer_id).maybeSingle()).data : null;
+
+      const token = Buffer.from(`${userId}:${email}:${roleRecord?.role || 'customer'}:${Date.now()}`).toString('base64');
+
+      return res.json({
+        token,
+        user: {
+          id: userId,
+          email,
+          full_name: profile?.full_name || email,
+          customer_id: profile?.customer_id || null,
+          role: roleRecord?.role || 'customer',
+          customer: customer || null,
+        },
+      });
+    }
+
+    // Local JSON fallback (demo)
     const user = db.findUserByEmail(email);
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password.' });
@@ -47,11 +132,34 @@ router.post('/login', (req: Request, res: Response) => {
 });
 
 // GET /api/auth/session
-router.get('/session', (req: Request, res: Response) => {
+router.get('/session', async (req: Request, res: Response) => {
   try {
     const userId = req.headers['x-user-id'] as string;
     if (!userId) {
       return res.status(401).json({ error: 'No active session' });
+    }
+
+    if (isSupabaseEnabled) {
+      const svc = getServiceRoleClient();
+      const { data: profileData, error: profileErr } = await svc.from('profiles').select('*').eq('id', userId).maybeSingle();
+      if (profileErr) console.warn('Session profile lookup error:', profileErr.message);
+      const { data: roleData, error: roleErr } = await svc.from('user_roles').select('*').eq('user_id', userId).maybeSingle();
+      if (roleErr) console.warn('Session role lookup error:', roleErr.message);
+
+      const profile = profileData || null;
+      const roleRecord = roleData || null;
+      const customer = profile?.customer_id ? (await svc.from('customers').select('*').eq('id', profile.customer_id).maybeSingle()).data : null;
+
+      return res.json({
+        user: {
+          id: userId,
+          email: profile?.email || null,
+          full_name: profile?.full_name || null,
+          customer_id: profile?.customer_id || null,
+          role: roleRecord?.role || 'customer',
+          customer: customer || null,
+        },
+      });
     }
 
     const user = db.findUserById(userId);

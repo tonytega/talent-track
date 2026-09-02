@@ -3,6 +3,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { isSupabaseEnabled, getServiceRoleClient } from '../supabaseClient';
+import * as supaDb from '../supabaseDb';
 import crypto from 'crypto';
 import { db, Candidate } from '../db';
 
@@ -33,16 +34,16 @@ const upload = multer({
 
 // GET /api/public/jobs/:jobId
 // Retrieves sanitized public job information
-router.get('/jobs/:jobId', (req: Request, res: Response) => {
+router.get('/jobs/:jobId', async (req: Request, res: Response) => {
   try {
     const { jobId } = req.params;
-    const job = db.getJob(jobId);
+    const job = isSupabaseEnabled ? await supaDb.getJob(jobId) : db.getJob(jobId);
 
     if (!job) {
       return res.status(404).json({ error: 'Job opening not found.' });
     }
 
-    const customer = db.getCustomer(job.customer_id);
+    const customer = isSupabaseEnabled ? await supaDb.getCustomer(job.customer_id) : db.getCustomer(job.customer_id);
 
     // Only expose public-facing job information
     return res.json({
@@ -77,7 +78,7 @@ router.post('/apply/:jobId', (req: Request, res: Response) => {
 
     try {
       const { jobId } = req.params;
-      const job = db.getJob(jobId);
+      const job = isSupabaseEnabled ? await supaDb.getJob(jobId) : db.getJob(jobId);
 
       if (!job) {
         if (req.file && (req.file as any).path && fs.existsSync((req.file as any).path)) fs.unlinkSync((req.file as any).path);
@@ -127,7 +128,7 @@ router.post('/apply/:jobId', (req: Request, res: Response) => {
 
       // 3. Duplicate Application Prevention
       const cleanEmail = email.trim().toLowerCase();
-      const existingCandidates = db.getCandidates(job.customer_id, job.id);
+      const existingCandidates = isSupabaseEnabled ? await supaDb.getCandidates(job.customer_id, job.id) : db.getCandidates(job.customer_id, job.id);
       const isDuplicate = existingCandidates.some(
         c => c.email.toLowerCase() === cleanEmail
       );
@@ -199,7 +200,11 @@ router.post('/apply/:jobId', (req: Request, res: Response) => {
         updated_at: new Date().toISOString(),
       };
 
-      db.createCandidate(newCandidate);
+      if (isSupabaseEnabled) {
+        await supaDb.createCandidate(newCandidate);
+      } else {
+        db.createCandidate(newCandidate);
+      }
 
       return res.status(201).json({
         success: true,

@@ -1,7 +1,9 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import path from 'path';
-import dotenv from 'dotenv';
 import authRoutes from './routes/auth';
 import adminRoutes from './routes/admin';
 import apiRoutes from './routes/api';

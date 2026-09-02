@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { db } from '../db';
 import crypto from 'crypto';
-import { isSupabaseEnabled } from '../supabaseClient';
+import { isSupabaseEnabled, getServiceRoleClient } from '../supabaseClient';
 import * as supaDb from '../supabaseDb';
 
 const router = Router();
@@ -16,7 +16,10 @@ async function requireAdmin(req: Request, res: Response, next: NextFunction) {
 
   if (isSupabaseEnabled) {
     try {
+      console.log('requireAdmin: checking role for userId=', userId);
+      console.log('requireAdmin: headers=', req.headers);
       const role = await supaDb.getUserRole(userId);
+      console.log('requireAdmin: role result=', role);
       if (!role || role.role !== 'admin') {
         return res.status(403).json({ error: 'Forbidden. Admin privileges required.' });
       }
@@ -61,15 +64,33 @@ router.post('/create-customer', requireAdmin, async (req: Request, res: Response
 
       // 2. Create Auth User via Supabase Auth (service role)
       const userPass = password || 'Password123!';
-      const svc = require('../supabaseClient').getServiceRoleClient();
+      const svc = getServiceRoleClient();
       const { data: userData, error: userError } = await svc.auth.admin.createUser({ email: contact_email, password: userPass });
       if (userError) throw userError;
 
+      const createdUserId = (userData && (userData.id || (userData.user && userData.user.id))) || null;
+      const createdUserEmail = (userData && (userData.email || (userData.user && userData.user.email))) || contact_email;
+      if (!createdUserId) {
+        // Try admin REST lookup as a fallback
+        try {
+          const url = `${process.env.SUPABASE_URL}/auth/v1/admin/users?email=${encodeURIComponent(contact_email)}`;
+          const resp = await fetch(url, { headers: { Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`, apikey: process.env.SUPABASE_SERVICE_ROLE_KEY || '' } });
+          if (resp.ok) {
+            const j = await resp.json();
+            if (Array.isArray(j?.users) && j.users.length > 0) createdUserId = j.users[0].id;
+            else if (Array.isArray(j) && j.length > 0) createdUserId = j[0].id;
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+      if (!createdUserId) throw new Error('Failed to determine created user id');
+
       // 3. Create Profile linked to customer
-      const profile = await supaDb.createProfile({ id: userData.id, full_name: contact_name, email: contact_email, customer_id: customer.id, created_at: new Date().toISOString() });
+      const profile = await supaDb.createProfile({ id: createdUserId, full_name: contact_name, email: createdUserEmail, customer_id: customer.id, created_at: new Date().toISOString() });
 
       // 4. Assign 'customer' role
-      const role = await supaDb.createUserRole({ user_id: userData.id, role: 'customer', created_at: new Date().toISOString() });
+      const role = await supaDb.createUserRole({ user_id: createdUserId, role: 'customer', created_at: new Date().toISOString() });
 
       return res.status(201).json({
         success: true,
@@ -119,15 +140,32 @@ router.post('/create-admin', requireAdmin, async (req: Request, res: Response) =
 
     if (isSupabaseEnabled) {
       // create via Supabase Auth + profiles + role
-      const svc = require('../supabaseClient').getServiceRoleClient();
+      const svc = getServiceRoleClient();
       const userPass = password || 'Password123!';
       const { data: userData, error: userError } = await svc.auth.admin.createUser({ email, password: userPass });
       if (userError) throw userError;
 
-      const profile = await supaDb.createProfile({ id: userData.id, full_name, email, customer_id: null, created_at: new Date().toISOString() });
-      const role = await supaDb.createUserRole({ user_id: userData.id, role: 'admin', created_at: new Date().toISOString() });
+      let createdAdminId = (userData && (userData.id || (userData.user && userData.user.id))) || null;
+      const createdAdminEmail = (userData && (userData.email || (userData.user && userData.user.email))) || email;
+      if (!createdAdminId) {
+        try {
+          const url = `${process.env.SUPABASE_URL}/auth/v1/admin/users?email=${encodeURIComponent(email)}`;
+          const resp = await fetch(url, { headers: { Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`, apikey: process.env.SUPABASE_SERVICE_ROLE_KEY || '' } });
+          if (resp.ok) {
+            const j = await resp.json();
+            if (Array.isArray(j?.users) && j.users.length > 0) createdAdminId = j.users[0].id;
+            else if (Array.isArray(j) && j.length > 0) createdAdminId = j[0].id;
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+      if (!createdAdminId) throw new Error('Failed to determine created admin id');
 
-      return res.status(201).json({ success: true, message: 'Admin account created successfully', user: { id: userData.id, email: userData.email, full_name: profile.full_name, role: role.role } });
+      const profile = await supaDb.createProfile({ id: createdAdminId, full_name, email: createdAdminEmail, customer_id: null, created_at: new Date().toISOString() });
+      const role = await supaDb.createUserRole({ user_id: createdAdminId, role: 'admin', created_at: new Date().toISOString() });
+
+      return res.status(201).json({ success: true, message: 'Admin account created successfully', user: { id: createdAdminId, email: createdAdminEmail, full_name: profile.full_name, role: role.role } });
     }
 
     if (db.findUserByEmail(email)) {
@@ -147,8 +185,28 @@ router.post('/create-admin', requireAdmin, async (req: Request, res: Response) =
 });
 
 // GET /api/admin/customers
-router.get('/customers', requireAdmin, (_req: Request, res: Response) => {
+router.get('/customers', requireAdmin, async (_req: Request, res: Response) => {
   try {
+    if (isSupabaseEnabled) {
+      // Fetch customers, jobs, candidates from Supabase and compute counts
+      const customers = await supaDb.getCustomers();
+      const jobs = await supaDb.getJobs();
+      const candidates = await supaDb.getCandidates();
+
+      const result = customers.map((c: any) => {
+        const customerJobs = jobs.filter((j: any) => j.customer_id === c.id);
+        const customerCandidates = candidates.filter((cand: any) => cand.customer_id === c.id);
+        return {
+          ...c,
+          jobs_count: customerJobs.length,
+          active_jobs_count: customerJobs.filter((j: any) => j.status === 'Open').length,
+          candidates_count: customerCandidates.length,
+        };
+      });
+
+      return res.json(result);
+    }
+
     const customers = db.getCustomers();
     const jobs = db.getJobs();
     const candidates = db.getCandidates();
