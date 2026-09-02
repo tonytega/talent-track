@@ -15,9 +15,7 @@ const router = Router();
 //   fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 // }
 
-const UPLOAD_DIR = process.env.NETLIFY === 'true'
-  ? path.join('/tmp', 'resumes')
-  : path.resolve(process.cwd(), 'data', 'resumes');
+const UPLOAD_DIR = '/tmp/resumes';
 
 if (!fs.existsSync(UPLOAD_DIR)) {
   fs.mkdirSync(UPLOAD_DIR, { recursive: true });

@@ -91,11 +91,7 @@ export interface DatabaseState {
 //   fs.mkdirSync(dataDir, { recursive: true });
 // }
 
-const isNetlify = process.env.NETLIFY === 'true';
-
-const DB_FILE = isNetlify
-  ? path.join('/tmp', 'talenttrack_db.json')
-  : path.resolve(process.cwd(), 'data', 'talenttrack_db.json');
+const DB_FILE = '/tmp/talenttrack_db.json';
 
 const dataDir = path.dirname(DB_FILE);
 
