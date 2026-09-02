@@ -1,23 +1,28 @@
 services:
   - type: web
     name: talent-track-backend
-    env: node
+    runtime: node
     region: oregon
     plan: starter
     repo: https://github.com/tonytega/talent-track.git
     branch: master
-    autoDeploy: true
+    autoDeployTrigger: commit
     buildCommand: npm ci && npm run build
     startCommand: npm run start
     healthCheckPath: /api/health
-    env:
+
+    envVars:
       - key: SUPABASE_URL
-        value: ""
+        sync: false
+
       - key: SUPABASE_ANON_KEY
-        value: ""
+        sync: false
+
       - key: SUPABASE_SERVICE_ROLE_KEY
-        value: ""
+        sync: false
+
       - key: SUPABASE_DB_URL
-        value: ""
+        sync: false
+
       - key: GEMINI_API_KEY
-        value: ""
+        sync: false
