@@ -79,14 +79,9 @@ router.post('/login', async (req: Request, res: Response) => {
           console.warn('Login failed due to unconfirmed email; ALLOW_DEMO_AUTO_CONFIRM is not enabled.');
         }
 
-        // return res.status(401).json({ error: 'Invalid email or password.' });
+        return res.status(401).json({ error: 'Invalid email or password.' });
 
-        return res.status(401).json({
-  error: 'Invalid email or password.',
-  supabase_error: error?.message || 'No Supabase error message',
-  supabase_code: error?.code || null,
-  supabase_status: error?.status || null,
-});
+   
       }
 
       const userId = data.user.id;
