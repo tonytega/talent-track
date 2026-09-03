@@ -122,26 +122,81 @@ export const CandidatesPage: React.FC = () => {
   };
 
   // Add or edit candidate
-  const handleSaveCandidate = async (data: Partial<Candidate>, resumeFile?: File) => {
-    if (editingCandidate) {
-      const updated = await api.updateCandidate(editingCandidate.id, data, activeCustomerId);
-      if (resumeFile) {
-        await api.uploadResume(updated.id, resumeFile);
-      }
-      setCandidates(prev => prev.map(c => (c.id === editingCandidate.id ? updated : c)));
-      if (selectedProfileCandidate?.id === editingCandidate.id) {
-        setSelectedProfileCandidate(updated);
-      }
-    } else {
-      const created = await api.createCandidate(data, activeCustomerId);
-      if (resumeFile) {
-        await api.uploadResume(created.id, resumeFile);
-      }
-      setCandidates(prev => [created, ...prev]);
-    }
-    setEditingCandidate(null);
-  };
+  // const handleSaveCandidate = async (data: Partial<Candidate>, resumeFile?: File) => {
+  //   if (editingCandidate) {
+  //     const updated = await api.updateCandidate(editingCandidate.id, data, activeCustomerId);
+  //     if (resumeFile) {
+  //       await api.uploadResume(updated.id, resumeFile);
+  //     }
+  //     setCandidates(prev => prev.map(c => (c.id === editingCandidate.id ? updated : c)));
+  //     if (selectedProfileCandidate?.id === editingCandidate.id) {
+  //       setSelectedProfileCandidate(updated);
+  //     }
+  //   } else {
+  //     const created = await api.createCandidate(data, activeCustomerId);
+  //     if (resumeFile) {
+  //       await api.uploadResume(created.id, resumeFile);
+  //     }
+  //     setCandidates(prev => [created, ...prev]);
+  //   }
+  //   setEditingCandidate(null);
+  // };
 
+
+
+const handleSaveCandidate = async (data: Partial<Candidate>, resumeFile?: File) => {
+  if (editingCandidate) {
+    let updated = await api.updateCandidate(
+      editingCandidate.id,
+      data,
+      activeCustomerId
+    );
+
+    if (resumeFile) {
+      const uploadResult = await api.uploadResume(
+        updated.id,
+        resumeFile
+      );
+
+      // Use the candidate returned after the CV upload.
+      updated = uploadResult.candidate;
+    }
+
+    setCandidates(prev =>
+      prev.map(c =>
+        c.id === editingCandidate.id ? updated : c
+      )
+    );
+
+    if (selectedProfileCandidate?.id === editingCandidate.id) {
+      setSelectedProfileCandidate(updated);
+    }
+  } else {
+    let created = await api.createCandidate(
+      data,
+      activeCustomerId
+    );
+
+    if (resumeFile) {
+      const uploadResult = await api.uploadResume(
+        created.id,
+        resumeFile
+      );
+
+      // The upload endpoint returns the candidate
+      // with resume_path populated.
+      created = uploadResult.candidate;
+    }
+
+    setCandidates(prev => [created, ...prev]);
+  }
+
+  setEditingCandidate(null);
+};
+
+
+  
+  
   const handleDeleteCandidate = async (candidateId: string) => {
     try {
       await api.deleteCandidate(candidateId, activeCustomerId);
