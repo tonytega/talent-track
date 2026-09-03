@@ -65,7 +65,13 @@ router.post('/create-customer', requireAdmin, async (req: Request, res: Response
       // 2. Create Auth User via Supabase Auth (service role)
       const userPass = password || 'Password123!';
       const svc = getServiceRoleClient();
-      const { data: userData, error: userError } = await svc.auth.admin.createUser({ email: contact_email, password: userPass });
+      // const { data: userData, error: userError } = await svc.auth.admin.createUser({ email: contact_email, password: userPass });
+      const { data: userData, error: userError } =
+  await svc.auth.admin.createUser({
+    email: contact_email,
+    password: userPass,
+    email_confirm: true
+  });
       if (userError) throw userError;
 
       let createdUserId = (userData && ( (userData as any).id || (userData as any).user?.id )) || null;
@@ -142,7 +148,13 @@ router.post('/create-admin', requireAdmin, async (req: Request, res: Response) =
       // create via Supabase Auth + profiles + role
       const svc = getServiceRoleClient();
       const userPass = password || 'Password123!';
-      const { data: userData, error: userError } = await svc.auth.admin.createUser({ email, password: userPass });
+      // const { data: userData, error: userError } = await svc.auth.admin.createUser({ email, password: userPass });
+      const { data: userData, error: userError } =
+  await svc.auth.admin.createUser({
+    email,
+    password: userPass,
+    email_confirm: true
+  });
       if (userError) throw userError;
 
       let createdAdminId = (userData && ( (userData as any).id || (userData as any).user?.id )) || null;
