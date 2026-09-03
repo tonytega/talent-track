@@ -40,6 +40,7 @@ export async function runAIAssessment(input: AssessInput): Promise<AIAssessment>
   if (geminiApiKey && geminiApiKey.trim().length > 5) {
     try {
       assessmentResult = await callGeminiAPI(geminiApiKey, candidate, job, input.resume_text);
+      console.warn('Gemini AI assessment result:', assessmentResult);
     } catch (err) {
       console.warn('Gemini API call failed, falling back to intelligent ATS heuristics:', err);
       assessmentResult = generateHeuristicAssessment(candidate, job, input.resume_text);
@@ -47,6 +48,7 @@ export async function runAIAssessment(input: AssessInput): Promise<AIAssessment>
   } else {
     // High-fidelity heuristic engine
     assessmentResult = generateHeuristicAssessment(candidate, job, input.resume_text);
+    console.warn('Heuristic AI assessment result:', assessmentResult);
   }
 
   // Create assessment record
@@ -105,7 +107,7 @@ Return your response strictly as valid JSON matching this exact structure:
 }
 `;
 
-  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
